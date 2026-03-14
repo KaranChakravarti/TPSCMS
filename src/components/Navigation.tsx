@@ -22,7 +22,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold">CT</div>
-            <span className="font-headline font-bold text-xl text-primary tracking-tight">ChainTrack Verify</span>
+            <span className="font-headline font-bold text-xl text-primary tracking-tight">TPSCMS</span>
           </Link>
           <div className="hidden md:flex gap-1">
             {links.map((link) => (

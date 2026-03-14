@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'ChainTrack Verify | Tamper-Proof Supply Chain',
+  title: 'TPSCMS | Tamper-Proof Supply Chain',
   description: 'Immutable supply chain management system powered by blockchain simulation.',
 };
 
@@ -29,7 +29,7 @@ export default function RootLayout({
           </main>
           <footer className="border-t border-border py-8 bg-card mt-12">
             <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-              <p>© {new Date().getFullYear()} ChainTrack Verify. Built for transparency and trust.</p>
+              <p>© {new Date().getFullYear()} TPSCMS. Built for transparency and trust.</p>
             </div>
           </footer>
           <Toaster />
