@@ -74,7 +74,7 @@ export async function createBlock(
       path: blocksRef.path,
     });
     errorEmitter.emit('permission-error', contextualError);
-    throw contextualError;
+    // Continue even if list fails (e.g., first block)
   }
 
   const index = previousBlock ? previousBlock.index + 1 : 0;
