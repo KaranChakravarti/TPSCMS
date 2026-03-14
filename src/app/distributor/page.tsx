@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { createBlock, getProductHistory } from '@/lib/blockchain';
+import { createBlock, checkProductExists } from '@/lib/blockchain';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
@@ -36,9 +36,8 @@ export default function DistributorPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      // Check if product exists first
-      const history = await getProductHistory(values.productId);
-      if (history.length === 0) {
+      const exists = await checkProductExists(values.productId);
+      if (!exists) {
         toast({
           variant: "destructive",
           title: "Product Not Found",
@@ -64,12 +63,7 @@ export default function DistributorPage() {
       });
       router.push(`/verify/${values.productId}`);
     } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add record. Please check the Product ID.",
-      });
+      // Errors are now handled centrally by FirebaseErrorListener via blockchain.ts
     } finally {
       setIsSubmitting(false);
     }

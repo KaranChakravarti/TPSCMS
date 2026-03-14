@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { createBlock, getProductHistory } from '@/lib/blockchain';
+import { createBlock, checkProductExists } from '@/lib/blockchain';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
@@ -36,8 +36,8 @@ export default function RetailerPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const history = await getProductHistory(values.productId);
-      if (history.length === 0) {
+      const exists = await checkProductExists(values.productId);
+      if (!exists) {
         toast({
           variant: "destructive",
           title: "Invalid Product ID",
@@ -63,12 +63,7 @@ export default function RetailerPage() {
       });
       router.push(`/verify/${values.productId}`);
     } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An error occurred while verifying the product chain.",
-      });
+      // Errors are handled centrally
     } finally {
       setIsSubmitting(false);
     }
