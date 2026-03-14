@@ -1,5 +1,6 @@
+
 import { collection, query, where, getDocs, addDoc, orderBy, limit } from 'firebase/firestore';
-import { db } from './firebase';
+import { initializeFirebase } from '@/firebase';
 
 export interface Block {
   index: number;
@@ -26,7 +27,8 @@ export async function createBlock(
   action: string,
   details: Record<string, any>
 ): Promise<Block> {
-  const blocksRef = collection(db, 'blocks');
+  const { firestore } = initializeFirebase();
+  const blocksRef = collection(firestore, 'blocks');
   const q = query(
     blocksRef,
     where('productId', '==', productId),
@@ -73,7 +75,8 @@ export async function createBlock(
 }
 
 export async function getProductHistory(productId: string): Promise<Block[]> {
-  const blocksRef = collection(db, 'blocks');
+  const { firestore } = initializeFirebase();
+  const blocksRef = collection(firestore, 'blocks');
   const q = query(
     blocksRef,
     where('productId', '==', productId),

@@ -1,16 +1,18 @@
+
 "use client"
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Factory, QrCode, CheckCircle2, Loader2 } from 'lucide-react';
+import { Factory, Download, CheckCircle2, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { createBlock } from '@/lib/blockchain';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const formSchema = z.object({
   productId: z.string().min(3, 'Product ID must be at least 3 characters'),
@@ -23,6 +25,7 @@ export default function ManufacturerPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredProduct, setRegisteredProduct] = useState<string | null>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,6 +68,18 @@ export default function ManufacturerPage() {
       setIsSubmitting(false);
     }
   }
+
+  const downloadQR = () => {
+    if (!qrRef.current) return;
+    const canvas = qrRef.current.querySelector('canvas');
+    if (canvas) {
+      const url = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `QR-${registeredProduct}.png`;
+      link.href = url;
+      link.click();
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
@@ -164,13 +179,21 @@ export default function ManufacturerPage() {
             </div>
             
             <div className="bg-card border-2 border-dashed rounded-2xl p-8 max-w-[250px] mx-auto">
-               <div className="aspect-square bg-slate-100 flex items-center justify-center rounded-lg border">
-                  <QrCode className="w-24 h-24 text-slate-400" />
+               <div ref={qrRef} className="aspect-square bg-white flex items-center justify-center rounded-lg border p-4">
+                  <QRCodeCanvas 
+                    value={registeredProduct} 
+                    size={180}
+                    level="H"
+                    includeMargin={false}
+                  />
                </div>
                <p className="mt-4 text-xs font-mono text-muted-foreground uppercase tracking-widest">Product ID: {registeredProduct}</p>
             </div>
 
             <div className="flex flex-col gap-3 max-w-sm mx-auto">
+              <Button onClick={downloadQR} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
+                <Download className="w-4 h-4" /> Download QR Code
+              </Button>
               <Button variant="outline" onClick={() => setRegisteredProduct(null)}>
                 Register Another Product
               </Button>
