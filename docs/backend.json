@@ -1,0 +1,149 @@
+{
+  "entities": {
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a physical product registered in the supply chain system, holding its immutable base information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity. This ID is also used for QR code generation."
+        },
+        "productName": {
+          "type": "string",
+          "description": "The commercial name of the product."
+        },
+        "batchNumber": {
+          "type": "string",
+          "description": "The specific batch number assigned to this product instance."
+        },
+        "manufacturingDate": {
+          "type": "string",
+          "description": "The date when the product was manufactured.",
+          "format": "date"
+        },
+        "registeredAt": {
+          "type": "string",
+          "description": "The timestamp indicating when this product was first registered in the system.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "productName",
+        "batchNumber",
+        "manufacturingDate",
+        "registeredAt"
+      ]
+    },
+    "SupplyChainBlock": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SupplyChainBlock",
+      "type": "object",
+      "description": "Represents an immutable record (a 'block') of an event in a product's supply chain, simulating a blockchain structure.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SupplyChainBlock entity."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product this block is associated with. (Relationship: Product 1:N SupplyChainBlock)"
+        },
+        "index": {
+          "type": "number",
+          "description": "The sequential index of this block within the specific product's supply chain history, starting from 0 or 1."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The exact date and time when this supply chain event (block) was created.",
+          "format": "date-time"
+        },
+        "actorType": {
+          "type": "string",
+          "description": "The role of the entity performing the action (e.g., 'manufacturer', 'distributor', 'retailer')."
+        },
+        "actorName": {
+          "type": "string",
+          "description": "The name of the specific individual or organization that performed the action."
+        },
+        "actorLocation": {
+          "type": "string",
+          "description": "The geographical location where the supply chain action occurred."
+        },
+        "action": {
+          "type": "string",
+          "description": "A description of the specific action performed (e.g., 'registered product', 'distributed product', 'retailed product')."
+        },
+        "previousHash": {
+          "type": "string",
+          "description": "The SHA256 hash of the preceding block in the product's chain, crucial for maintaining the integrity and immutability of the chain."
+        },
+        "currentHash": {
+          "type": "string",
+          "description": "The SHA256 hash generated from the current block's data, verifying its content."
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "index",
+        "timestamp",
+        "actorType",
+        "actorName",
+        "actorLocation",
+        "action",
+        "previousHash",
+        "currentHash"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores the master record for each physical product. This collection is publicly readable for verification. Write access is intended for manufacturers. The 'id' field of the Product entity is mapped to the document ID.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier of the product, corresponding to the 'id' field in the Product schema."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}/supplyChainBlocks/{blockId}",
+        "definition": {
+          "entityName": "SupplyChainBlock",
+          "schema": {
+            "$ref": "#/backend/entities/SupplyChainBlock"
+          },
+          "description": "Stores immutable records of supply chain events (blocks) for a specific product. Each document contains a denormalized 'productId' for authorization independence. This subcollection is publicly readable to allow full history verification. Write access is restricted to authorized actors (manufacturer, distributor, retailer) who can append new blocks.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier of the parent product to which this supply chain block belongs."
+            },
+            {
+              "name": "blockId",
+              "description": "The unique identifier for this specific supply chain block, corresponding to the 'id' field in the SupplyChainBlock schema."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to facilitate tamper-proof supply chain management with robust security and debuggability, adhering to all core design principles. We utilize two main collection types: `products` for master product records and `supplyChainBlocks` as a subcollection under `products` to store the immutable history of each product.\n\n**Authorization Independence (CRITICAL):**\n1.  **`/products/{productId}`:** Each product document stands alone. Its authorization (publicly readable for verification, manufacturer-writable) does not depend on data from other parent documents. The `productId` is the unique identifier and sufficient context for its own access rules.\n2.  **`/products/{productId}/supplyChainBlocks/{blockId}`:** This subcollection is critical for ensuring authorization independence. While conceptually a child of a product, each `SupplyChainBlock` document *also* explicitly contains the `productId` field. This denormalization means that even if a rule needed to verify the parent `productId` for a `SupplyChainBlock` (though not strictly necessary for public read), it could do so directly from the `SupplyChainBlock` document itself (e.g., `resource.data.productId == productId` where `productId` is the path wildcard). More importantly, for read access, simply allowing `read: true` for this subcollection is sufficient, as all historical blocks are intended for public verification. No `get()` calls to the parent `Product` document are required in the security rules to determine access for `SupplyChainBlock` documents, thereby maintaining authorization independence and allowing atomic operations for creating entire product histories.\n\n**Clarity of Intent (Debuggability):** The path structure `/products/{productId}/supplyChainBlocks/{blockId}` clearly indicates that `supplyChainBlocks` are direct historical records belonging to a specific product. Wildcards `{productId}` and `{blockId}` are semantically clear, enhancing debuggability of security rules.\n\n**QAPs (Rules are not Filters):**\n1.  **`/products/{productId}`:** A customer verifying a QR code will retrieve a specific `productId`. The security rule for this path can simply `allow read: true;` (or `allow read: if request.auth != null;` if basic authentication is required for viewing the product overview), which is a Query Access Pattern (QAP) compliant rule as it doesn't attempt to filter data, only grant access to existing documents by ID.\n2.  **`/products/{productId}/supplyChainBlocks/{blockId}`:** To view the full product history, the application will query this subcollection based on a known `productId`. The rule can `allow list, read: true;` because all blocks are publicly verifiable. This allows efficient and secure `list` operations without requiring complex filtering logic in the rules. The design inherently supports querying all blocks for a given product ID without violating QAPs.\n\n**Structural Segregation:**\n*   All documents within `/products` share the security posture of being publicly viewable master records. Any specific write permissions (e.g., only manufacturers can create) would be handled by a simple `request.auth.uid` check against a separate `roles_manufacturer` collection (if implemented, otherwise handled by backend logic).\n*   All documents within `/products/{productId}/supplyChainBlocks` share the security posture of being immutable, publicly viewable historical records. This ensures consistent and straightforward security rules within each collection and subcollection.\n\n**DBAC:** While not explicitly defining user roles in the `firestorePaths`, the design supports DBAC by keeping role-based access checks (e.g., only a manufacturer can create a product or first block) separate from the product and block data itself. If needed, a `/roles_manufacturer/{uid}` collection would be used for authorization checks in security rules to allow writes, without affecting the structure or readability of the product data."
+  }
+}

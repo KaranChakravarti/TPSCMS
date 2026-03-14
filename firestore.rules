@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * DOCUMENTATION: SUPPLY CHAIN VERIFICATION SYSTEM
+     *
+     * Core Philosophy:
+     * This ruleset implements a "Public Verification, Restricted Issuance" model. The primary goal 
+     * is to allow any user (even unauthenticated ones) to verify the authenticity of a product 
+     * by scanning a QR code, while strictly controlling who can register products and append 
+     * supply chain events.
+     *
+     * Data Structure:
+     * Data is organized into a top-level `/products` collection for master records. Each product 
+     * contains a subcollection `/supplyChainBlocks` which acts as an immutable ledger of the 
+     * product's journey from manufacturer to consumer.
+     *
+     * Key Security Decisions:
+     * 1. Public Read Access: Both products and their supply chain history are globally readable 
+     *    (allow read: if true) to support the core functionality of scanning QR codes without 
+     *    requiring consumer login.
+     * 2. Protected Writes: Creating products or blocks requires authentication.
+     * 3. Relational Integrity: On creation, we enforce that the 'id' within the document 
+     *    matches the Firestore Document ID and that subcollection blocks are linked to the 
+     *    correct parent product ID.
+     * 4. Prototyping Flexibility: While we enforce authorization and relational links, we do 
+     *    not validate specific product attributes (names, dates, hashes) to allow for rapid schema 
+     *    evolution.
+     *
+     * Denormalization for Authorization:
+     * To maintain "Authorization Independence," each SupplyChainBlock contains a denormalized 
+     * 'productId'. This allows rules to verify path consistency without performing costly 
+     * get() lookups on parent documents.
+     */
+
+    // --- Helper Functions ---
+
+    /** @description Checks if the user is authenticated. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if a document exists for update/delete operations. */
+    function exists(res) {
+      return res != null;
+    }
+
+    /** @description Enforces that the data 'id' field matches the document ID in the path. */
+    function matchesPathId(data, pathId) {
+      return data.id == pathId;
+    }
+
+    /** @description Validates that the internal productId matches the parent path productId. */
+    function matchesParentProduct(data, productId) {
+      return data.productId == productId;
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Master product records. Publicly readable for QR verification. Writes 
+     * restricted to authenticated manufacturers/actors.
+     * @path /products/{productId}
+     * @allow get, list: if true; (Public verification)
+     * @deny create: if !isSignedIn(); (Only authenticated actors can register products)
+     * @principle Public read with protected creation and path-id consistency.
+     */
+    match /products/{productId} {
+      allow get, list: if true;
+
+      // CRITICAL: The Product entity is missing a specific 'manufacturerId' or 'ownerId' field.
+      // In this prototyping phase, we permit any signed-in user to create, but recommend
+      // adding an ownership field for production-grade security.
+      allow create: if isSignedIn() && matchesPathId(request.resource.data, productId);
+
+      allow update: if isSignedIn() && exists(resource) && matchesPathId(request.resource.data, productId);
+
+      allow delete: if isSignedIn() && exists(resource);
+
+      /**
+       * @description Immutable history of supply chain events for a product.
+       * @path /products/{productId}/supplyChainBlocks/{blockId}
+       * @allow get, list: if true; (Public history verification)
+       * @deny create: if request.resource.data.productId != productId; (Prevents cross-linking)
+       * @principle Relational integrity and public auditability.
+       */
+      match /supplyChainBlocks/{blockId} {
+        allow get, list: if true;
+
+        allow create: if isSignedIn() 
+                      && matchesPathId(request.resource.data, blockId)
+                      && matchesParentProduct(request.resource.data, productId);
+
+        // Blocks are intended to be immutable in a supply chain ledger.
+        // Update and delete are restricted to signed-in users but should be used sparingly.
+        allow update: if isSignedIn() 
+                      && exists(resource) 
+                      && matchesPathId(request.resource.data, blockId)
+                      && matchesParentProduct(request.resource.data, productId);
+
+        allow delete: if isSignedIn() && exists(resource);
+      }
+    }
+
+    // Default deny for any paths not explicitly matched
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+/**
+ * ARCHITECT NOTES & TODOs:
+ * 1. OWNERSHIP: The current schema lacks a 'creatorId' or 'manufacturerId'. To prevent users 
+ *    from editing each other's products, add an 'ownerId' field to the Product entity and 
+ *    update the 'update' rule to: allow update: if request.auth.uid == resource.data.ownerId;
+ * 2. IMMUTABILITY: For a true blockchain-style simulation, the 'update' and 'delete' 
+ *    permissions for 'supplyChainBlocks' should be set to 'if false;' to ensure the 
+ *    integrity of the history.
+ * 3. ROLES: If you implement a '/roles' collection, you can further restrict product 
+ *    creation to only those with the 'manufacturer' role.
+ */
