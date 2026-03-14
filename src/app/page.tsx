@@ -1,9 +1,29 @@
+
+"use client"
+
 import Link from 'next/link';
-import { Factory, Truck, Store, ShieldCheck, ChevronRight, Lock, Database, Search } from 'lucide-react';
+import { Factory, Truck, Store, ShieldCheck, ChevronRight, Lock, Database, Search, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { Badge } from '@/components/ui/badge';
 
 export default function Home() {
+  const { firestore } = useFirebase();
+
+  // Real-time query for the 5 most recently registered products
+  const recentProductsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'products'), 
+      orderBy('registeredAt', 'desc'), 
+      limit(5)
+    );
+  }, [firestore]);
+
+  const { data: recentProducts, isLoading } = useCollection(recentProductsQuery);
+
   const modules = [
     {
       title: 'Manufacturer',
@@ -53,7 +73,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
         {modules.map((module) => (
           <Link key={module.title} href={module.href} className="group transition-transform hover:-translate-y-1">
             <Card className="h-full border-2 border-transparent hover:border-primary/20 transition-all">
@@ -74,47 +94,82 @@ export default function Home() {
         ))}
       </div>
 
-      <section className="bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <h2 className="text-3xl font-headline font-bold text-primary">How Blockchain Logic Protects You</h2>
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="mt-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center shrink-0">
-                  <Lock className="w-3 h-3 text-white" />
+      <div className="grid md:grid-cols-3 gap-8 mb-20">
+        <section className="md:col-span-2 bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <h2 className="text-3xl font-headline font-bold text-primary">Immutable Logic</h2>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="mt-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center shrink-0">
+                    <Lock className="w-3 h-3 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold">Hashing Integrity</h3>
+                    <p className="text-muted-foreground text-sm">Every block contains the hash of the previous record. Altering past data breaks the chain.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold">Hashing Integrity</h3>
-                  <p className="text-muted-foreground text-sm">Every record (block) contains the hash of the previous record. Altering any data in the past breaks the chain.</p>
+                <div className="flex gap-4">
+                  <div className="mt-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center shrink-0">
+                    <Database className="w-3 h-3 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold">Distributed Ledger</h3>
+                    <p className="text-muted-foreground text-sm">Records are stored permanently in Firestore, accessible globally for public verification.</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="mt-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center shrink-0">
-                  <Database className="w-3 h-3 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold">Distributed Ledger</h3>
-                  <p className="text-muted-foreground text-sm">Records are stored permanently in Firebase Firestore, accessible globally for verification but protected from deletion.</p>
+            </div>
+            <div className="relative">
+              <div className="aspect-video bg-card rounded-2xl shadow-xl border border-border p-6 flex flex-col justify-center">
+                <div className="space-y-3 font-code text-[10px] text-muted-foreground overflow-hidden">
+                  <p className="text-primary font-bold">{"// Block integrity check"}</p>
+                  <p>{"{"}</p>
+                  <p className="ml-4">"id": "blk_99a2",</p>
+                  <p className="ml-4">"prev": "3f9c...a21e",</p>
+                  <p className="ml-4 text-accent font-bold">"hash": "9b1e...f7d4"</p>
+                  <p>{"}"}</p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="relative">
-            <div className="aspect-video bg-card rounded-2xl shadow-xl border border-border p-6 flex flex-col justify-center">
-              <div className="space-y-3 font-code text-xs text-muted-foreground overflow-hidden">
-                <p className="text-primary font-bold">{"// Simulated Block Structure"}</p>
-                <p>{"{"}</p>
-                <p className="ml-4">"index": 42,</p>
-                <p className="ml-4">"productId": "PROD-8821",</p>
-                <p className="ml-4">"actor": "Distributor",</p>
-                <p className="ml-4">"previousHash": "3f9c...a21e",</p>
-                <p className="ml-4 text-accent font-bold">"currentHash": "9b1e...f7d4"</p>
-                <p>{"}"}</p>
+        </section>
+
+        <aside className="space-y-6">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" /> Global Activity
+          </h2>
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-20 bg-muted animate-pulse rounded-xl" />
+                ))}
               </div>
-            </div>
+            ) : recentProducts && recentProducts.length > 0 ? (
+              recentProducts.map((product) => (
+                <Link key={product.id} href={`/verify/${product.id}`}>
+                  <Card className="hover:border-primary/50 transition-colors cursor-pointer group mb-3">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="overflow-hidden">
+                        <p className="font-bold text-sm truncate">{product.productName}</p>
+                        <p className="text-xs text-muted-foreground font-mono">ID: {product.id}</p>
+                      </div>
+                      <Badge variant="secondary" className="group-hover:bg-primary group-hover:text-white transition-colors">
+                        View
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8 border-2 border-dashed rounded-xl">
+                No recent activity recorded yet.
+              </p>
+            )}
           </div>
-        </div>
-      </section>
+        </aside>
+      </div>
     </div>
   );
 }
