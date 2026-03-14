@@ -1,8 +1,9 @@
+
 "use client"
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Factory, Truck, Store, ShieldCheck, Home } from 'lucide-react';
+import { Factory, Truck, Store, ShieldCheck, Home, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const links = [
@@ -11,6 +12,7 @@ const links = [
   { href: '/distributor', label: 'Distributor', icon: Truck },
   { href: '/retailer', label: 'Retailer', icon: Store },
   { href: '/verify', label: 'Verify', icon: ShieldCheck },
+  { href: '/project-details', label: 'Details', icon: Info },
 ];
 
 export function Navigation() {

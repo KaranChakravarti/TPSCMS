@@ -2,7 +2,7 @@
 "use client"
 
 import Link from 'next/link';
-import { Factory, Truck, Store, ShieldCheck, ChevronRight, Lock, Database, Search, Clock } from 'lucide-react';
+import { Factory, Truck, Store, ShieldCheck, ChevronRight, Lock, Database, Search, Clock, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
@@ -62,12 +62,17 @@ export default function Home() {
           Trust Every Step of the Journey
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
-          ChainTrack Verify uses SHA-256 hash chaining to create an immutable, tamper-proof record of your product's lifecycle from factory to customer.
+          TPSCMS uses SHA-256 hash chaining to create an immutable, tamper-proof record of your product's lifecycle from factory to customer.
         </p>
-        <div className="flex justify-center pt-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
           <Link href="/verify">
-            <Button size="lg" className="rounded-full px-8 gap-2">
+            <Button size="lg" className="rounded-full px-8 gap-2 w-full sm:w-auto">
               Start Verification <Search className="w-4 h-4" />
+            </Button>
+          </Link>
+          <Link href="/project-details">
+            <Button variant="outline" size="lg" className="rounded-full px-8 gap-2 w-full sm:w-auto">
+              Project Details <Users className="w-4 h-4" />
             </Button>
           </Link>
         </div>
