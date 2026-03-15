@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: 'A secure, blockchain-simulated supply chain tracking system by Sangeetha, PremSagar, Prashanth, and Karan Kumar. Verify product authenticity using immutable SHA-256 hash chaining.',
   keywords: ['supply chain', 'blockchain simulation', 'tamper-proof', 'product verification', 'SHA-256', 'TPSCMS', 'logistics tracking'],
   authors: [{ name: 'Sangeetha' }, { name: 'PremSagar' }, { name: 'Prashanth' }, { name: 'Karan Kumar' }],
+  verification: {
+    google: 'googlecd6bcce301a1f9de',
+  },
   openGraph: {
     title: 'TPSCMS | Tamper-Proof Supply Chain',
     description: 'Immutable supply chain management system powered by blockchain simulation.',
