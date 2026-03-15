@@ -5,8 +5,20 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'TPSCMS | Tamper-Proof Supply Chain',
-  description: 'Immutable supply chain management system powered by blockchain simulation.',
+  title: 'TPSCMS | Tamper-Proof Supply Chain Management System',
+  description: 'A secure, blockchain-simulated supply chain tracking system by Sangeetha, PremSagar, Prashanth, and Karan Kumar. Verify product authenticity using immutable SHA-256 hash chaining.',
+  keywords: ['supply chain', 'blockchain simulation', 'tamper-proof', 'product verification', 'SHA-256', 'TPSCMS', 'logistics tracking'],
+  authors: [{ name: 'Sangeetha' }, { name: 'PremSagar' }, { name: 'Prashanth' }, { name: 'Karan Kumar' }],
+  openGraph: {
+    title: 'TPSCMS | Tamper-Proof Supply Chain',
+    description: 'Immutable supply chain management system powered by blockchain simulation.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TPSCMS | Tamper-Proof Supply Chain',
+    description: 'Verify your product journey from factory to retail with blockchain-grade security.',
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +41,8 @@ export default function RootLayout({
           </main>
           <footer className="border-t border-border py-8 bg-card mt-12">
             <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-              <p>© {new Date().getFullYear()} TPSCMS. Built for transparency and trust.</p>
+              <p>© {new Date().getFullYear()} TPSCMS - Tamper-Proof Supply Chain Management System. All rights reserved.</p>
+              <p className="mt-2 text-xs">Developed by Sangeetha, PremSagar, Prashanth, and Karan Kumar.</p>
             </div>
           </footer>
           <Toaster />

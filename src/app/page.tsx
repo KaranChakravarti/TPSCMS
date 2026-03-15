@@ -59,7 +59,7 @@ export default function Home() {
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto text-center mb-16 space-y-4">
         <h1 className="text-4xl md:text-6xl font-headline font-extrabold text-primary tracking-tight">
-          Trust Every Step of the Journey
+          Tamper-Proof Supply Chain Management System
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
           TPSCMS uses SHA-256 hash chaining to create an immutable, tamper-proof record of your product's lifecycle from factory to customer.
@@ -67,7 +67,7 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
           <Link href="/verify">
             <Button size="lg" className="rounded-full px-8 gap-2 w-full sm:w-auto">
-              Start Verification <Search className="w-4 h-4" />
+              Verify Authenticity <Search className="w-4 h-4" />
             </Button>
           </Link>
           <Link href="/project-details">
@@ -103,7 +103,7 @@ export default function Home() {
         <section className="md:col-span-2 bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl font-headline font-bold text-primary">Immutable Logic</h2>
+              <h2 className="text-3xl font-headline font-bold text-primary">Immutable Traceability</h2>
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="mt-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center shrink-0">
@@ -111,7 +111,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-bold">Hashing Integrity</h3>
-                    <p className="text-muted-foreground text-sm">Every block contains the hash of the previous record. Altering past data breaks the chain.</p>
+                    <p className="text-muted-foreground text-sm">Every block contains the hash of the previous record. Altering past data breaks the chain of trust.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -119,8 +119,8 @@ export default function Home() {
                     <Database className="w-3 h-3 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold">Distributed Ledger</h3>
-                    <p className="text-muted-foreground text-sm">Records are stored permanently in Firestore, accessible globally for public verification.</p>
+                    <h3 className="font-bold">Distributed Ledger Simulation</h3>
+                    <p className="text-muted-foreground text-sm">Records are stored permanently in Firestore, providing a public audit trail for transparency.</p>
                   </div>
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function Home() {
             <div className="relative">
               <div className="aspect-video bg-card rounded-2xl shadow-xl border border-border p-6 flex flex-col justify-center">
                 <div className="space-y-3 font-code text-[10px] text-muted-foreground overflow-hidden">
-                  <p className="text-primary font-bold">{"// Block integrity check"}</p>
+                  <p className="text-primary font-bold">{"// Blockchain integrity check"}</p>
                   <p>{"{"}</p>
                   <p className="ml-4">"id": "blk_99a2",</p>
                   <p className="ml-4">"prev": "3f9c...a21e",</p>
@@ -142,7 +142,7 @@ export default function Home() {
 
         <aside className="space-y-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <Clock className="w-5 h-5 text-primary" /> Global Activity
+            <Clock className="w-5 h-5 text-primary" /> Live Registry
           </h2>
           <div className="space-y-4">
             {isLoading ? (
@@ -161,7 +161,7 @@ export default function Home() {
                         <p className="text-xs text-muted-foreground font-mono">ID: {product.id}</p>
                       </div>
                       <Badge variant="secondary" className="group-hover:bg-primary group-hover:text-white transition-colors">
-                        View
+                        Inspect
                       </Badge>
                     </CardContent>
                   </Card>
